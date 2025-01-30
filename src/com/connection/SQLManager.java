@@ -11,7 +11,7 @@ public class SQLManager {
    static {
         // HikariCP configuration
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql:// " + HardcodedValues.DATABASE_IP_ADDRESS +":3306/"+ HardcodedValues.DATABASE_NAME); // Database URL
+        config.setJdbcUrl("jdbc:mysql:// " + HardcodedValues.DATABASE_IP_ADDRESS +":"+HardcodedValues.DATABASE_PORT+"/"+ HardcodedValues.DATABASE_NAME); // Database URL
         config.setUsername(HardcodedValues.DATABASE_USERNAME); // Database username
         config.setPassword( HardcodedValues.DATABASE_PASSWORD); // Database password
         config.setMaximumPoolSize(10); // Maximum number of connections in the pool
@@ -19,8 +19,6 @@ public class SQLManager {
         config.setIdleTimeout(30000); // Idle timeout in milliseconds
         config.setMaxLifetime(1800000); // Maximum lifetime of a connection
         config.setConnectionTimeout(30000); // Connection timeout in milliseconds
-
-        // Optional: Additional settings
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

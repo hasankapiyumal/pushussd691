@@ -25,18 +25,19 @@ import java.util.logging.Logger;
 public class Main {
 
     public static void main(String[] args) {
+        //This is used for create and handle Thread pool. Also there are 10 threads working 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+       //NumberDataDAO arraylists are 
         List<NumberDataDAO> numberDetrails = ApplicationProcess.getNumberDetrails();
         for (NumberDataDAO dataDAO : numberDetrails) {
-           // System.out.println("sno :" + dataDAO.getSno() + " number :" + dataDAO.getNumber());
-            
+            //start the threads for the process
            executorService.submit(()->ApplicationProcess.startProcess(dataDAO));
             
             
         }
        
-        
+        //after completing all process the stops the threads
         executorService.shutdown();
         
         

@@ -34,26 +34,26 @@ public class ApplicationProcess {
     private static Connection connection;
     private static int count=0;
 
+    //get the CLI from data base for push 
     public static List<NumberDataDAO> getNumberDetrails() {
         List<NumberDataDAO> numberDetails = new ArrayList();
         try {
             connection = SQLManager.getConnection();
-            PreparedStatement prepareStatement = connection.prepareStatement("SELECT sno, mobile FROM basenew2 WHERE status = 0 LIMIT 500 FOR UPDATE SKIP LOCKED");
+            PreparedStatement prepareStatement = connection.prepareStatement("SELECT sno, mobile FROM pushussd_numberdata WHERE status = 0 LIMIT 500 FOR UPDATE SKIP LOCKED");
             ResultSet resultSet = prepareStatement.executeQuery();
             while (resultSet.next()) {
 
                 int sno = resultSet.getInt(1);
                 String mobileNumber = resultSet.getString(2);
-
                 NumberDataDAO numberDataDAO = new NumberDataDAO(sno, mobileNumber);
+                //Get the 500 of user numbers and snos' add arraylist
                 numberDetails.add(numberDataDAO);
 
             }
 
         } catch (SQLException ex) {
             Logger.getLogger(ApplicationProcess.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally {
+        }finally {
 
             if (connection != null) {
 
@@ -67,11 +67,11 @@ public class ApplicationProcess {
 
         return numberDetails;
     }
-
+    //calling hutch API for push CLI
     public static boolean callApi(NumberDataDAO numberDataDAO) {
 
-        String baseURL = "http://192.168.148.37:5522/nipush.php?USER=WifiCRBT&PASSWORD=Hutch@123&MSISDN=" + numberDataDAO.getNumber() + "&MENU=691";
-        //String baseURL = "http://localhost:8080/api/v1/customer/get-by-id?id=1";
+       // String baseURL = "http://192.168.148.37:5522/nipush.php?USER=WifiCRBT&PASSWORD=Hutch@123&MSISDN=" + numberDataDAO.getNumber() + "&MENU=691";
+        String baseURL = "http://localhost:8080/api/v1/customer/get-by-id?id=1";
 
         try {
             URL url = new URL(baseURL);
@@ -90,6 +90,7 @@ public class ApplicationProcess {
                 line = br.readLine();
                 response += line;
             }
+            //Checking the response for identify if that reponse coming from hutch
             if (response.contains("ACCEPTED") || responseCode == 200) {
                  count=count+1;
                  System.out.println("hutch response count : "+count);
@@ -106,11 +107,12 @@ public class ApplicationProcess {
         return false;
     }
 
+    //After successfully push the CLI for hutch API then update the CLI status for 1
     public static boolean updateNumberStatus(NumberDataDAO numberDataDAO) {
 
         try {
             connection = SQLManager.getConnection();
-            PreparedStatement prepareStatement = connection.prepareStatement("update basenew2 set status=1,updatedTime=now() where mobile=" + numberDataDAO.getNumber() + " and sno=" + numberDataDAO.getSno());
+            PreparedStatement prepareStatement = connection.prepareStatement("update pushussd_numberdata set status=1,updateTime=now() where mobile=" + numberDataDAO.getNumber() + " and sno=" + numberDataDAO.getSno());
             int resultSet = prepareStatement.executeUpdate();
             if (resultSet == 1) {
 
@@ -120,8 +122,7 @@ public class ApplicationProcess {
 
         } catch (SQLException ex) {
             Logger.getLogger(ApplicationProcess.class.getName()).log(Level.SEVERE, null, ex);
-        }        
-        finally {
+        }finally {
 
             if (connection != null) {
 
@@ -135,8 +136,9 @@ public class ApplicationProcess {
         return false;
     }
 
+    //This is the method get the all CLI and its' sno as a arraylist and pass for push for hutch API and set the status
     public static void startProcess(NumberDataDAO numberDataDAO) {
-        System.out.println("Hello");
+      
         if (callApi(numberDataDAO)) {
 
             updateNumberStatus(numberDataDAO);
